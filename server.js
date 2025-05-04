@@ -2,28 +2,49 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const cors = require('cors'); // Add near the top with other requires
+
+// Add this near the top
+const isProduction = process.env.NODE_ENV === 'production';
+
+// In-memory ticket storage for production environments
+let ticketsInMemory = [];
+
+// Data file path (only used in development)
+const TICKETS_FILE = path.join(__dirname, 'data', 'tickets.json');
+
+// Only create directories/files in development
+if (!isProduction) {
+    if (!fs.existsSync(path.join(__dirname, 'data'))) {
+        fs.mkdirSync(path.join(__dirname, 'data'));
+    }
+
+    if (!fs.existsSync(TICKETS_FILE)) {
+        fs.writeFileSync(TICKETS_FILE, JSON.stringify([]));
+    }
+
+    // Load any existing tickets into memory
+    try {
+        const data = fs.readFileSync(TICKETS_FILE, 'utf8');
+        ticketsInMemory = JSON.parse(data);
+    } catch (err) {
+        console.error('Error loading tickets:', err);
+    }
+}
 
 // Create Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(cors()); // Add before other middleware
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  next();
+});
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// Data file path
-const TICKETS_FILE = path.join(__dirname, 'data', 'tickets.json');
-
-// Ensure data directory exists
-if (!fs.existsSync(path.join(__dirname, 'data'))) {
-    fs.mkdirSync(path.join(__dirname, 'data'));
-}
-
-// Ensure tickets file exists
-if (!fs.existsSync(TICKETS_FILE)) {
-    fs.writeFileSync(TICKETS_FILE, JSON.stringify([]));
-}
 
 // Classes
 class Ticket {
@@ -98,6 +119,10 @@ function extractEmails(text) {
 // API Endpoints
 // Get all tickets
 app.get('/api/tickets', (req, res) => {
+    if (isProduction) {
+        return res.json(ticketsInMemory);
+    }
+
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading tickets file:', err);
@@ -122,6 +147,16 @@ app.get('/api/tickets/search', (req, res) => {
         return res.status(400).json({ error: 'Search query is required' });
     }
     
+    if (isProduction) {
+        const results = ticketsInMemory.filter(ticket => 
+            ticket.id.includes(query) || 
+            ticket.fName.toLowerCase().includes(query.toLowerCase()) || 
+            ticket.lName.toLowerCase().includes(query.toLowerCase()) ||
+            (ticket.fName + ' ' + ticket.lName).toLowerCase().includes(query.toLowerCase())
+        );
+        return res.json(results);
+    }
+
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             return res.status(500).json({ error: 'Error reading tickets data' });
@@ -162,6 +197,11 @@ app.post('/api/tickets', (req, res) => {
     // Extract emails from problem description
     newTicket.contactEmails = extractEmails(ticketData.probDesc);
     
+    if (isProduction) {
+        ticketsInMemory.push(newTicket);
+        return res.status(201).json(newTicket);
+    }
+
     // Save ticket
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
@@ -178,6 +218,12 @@ app.post('/api/tickets', (req, res) => {
             res.status(201).json(newTicket);
         });
     });
+});
+
+// Error logging middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Server error' });
 });
 
 // Start server
