@@ -139,7 +139,7 @@ app.get('/api/tickets', (req, res) => {
 
 // Search tickets
 app.get('/api/tickets/search', (req, res) => {
-    const { query } = req.query;
+    const query = req.query.query || '';
     
     if (!query) {
         return res.status(400).json({ error: 'Search query is required' });
