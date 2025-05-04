@@ -242,8 +242,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     (errorData.errors ? errorData.errors.join(', ') : 'Unknown error') + '</p>';
             }
         } catch (error) {
+            console.error('Network error details:', error);
             formErrors.innerHTML = '<p>Network error. Please try again.</p>';
-            console.error('Error:', error);
         }
     });
     

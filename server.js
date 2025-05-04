@@ -41,8 +41,8 @@ app.use((req, res, next) => {
   next();
 });
 app.use(express.static(__dirname));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Classes
 class Ticket {
@@ -174,11 +174,14 @@ app.get('/api/tickets/search', (req, res) => {
 
 // Create a new ticket
 app.post('/api/tickets', (req, res) => {
+    console.log('Received ticket data:', req.body);
+    
     const ticketData = req.body;
     
     // Validate ticket data
     const validationErrors = Ticket.validate(ticketData);
     if (validationErrors.length > 0) {
+        console.log('Validation errors:', validationErrors);
         return res.status(400).json({ errors: validationErrors });
     }
     
