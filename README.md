@@ -5,6 +5,7 @@ Student repository for exercises and testing for ITWEB300-2502B.
 Patrick Frank, Instructor
 
 The front end of this project is hosted on Pages. You can pull it up by following the link below: 
+https://patrickfrankaiu.github.io/troubleTicketServer/
 
 
 
