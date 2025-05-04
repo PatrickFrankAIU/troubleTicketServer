@@ -1,7 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const bodyParser = require('body-parser');
+const cors = require('cors'); // Added cors package
 
 // Add this near the top
 const isProduction = process.env.NODE_ENV === 'production';
@@ -33,14 +33,19 @@ if (!isProduction) {
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000; // Changed default port to 10000 for Render
 
 // Middleware
+app.use(cors()); // Add CORS support
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
-app.use(express.static(__dirname));
+
+// Fixed static file serving - create a 'public' folder for static assets
+// Be sure to create this directory in your project
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -227,12 +232,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error' });
 });
 
-/* // Start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
- */
-// Start server
+// Start server - FIXED HOST BINDING FOR RENDER.COM
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT} at host 0.0.0.0`);
 });
