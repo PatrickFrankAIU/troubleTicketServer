@@ -1,0 +1,26 @@
+[
+  {
+    "id": "TK302393",
+    "reqDate": "07/14/1999",
+    "empID": "A12321",
+    "fName": "Andy",
+    "lName": "Blitz",
+    "probDesc": "Don't work!",
+    "ticketType": "computer",
+    "status": "Open",
+    "createdAt": "2025-05-04T21:15:02.394Z",
+    "contactEmails": []
+  },
+  {
+    "id": "TK339534",
+    "reqDate": "07/14/2014",
+    "empID": "A54321",
+    "fName": "Pat",
+    "lName": "Frank",
+    "probDesc": "Works too well! Please fix!!!",
+    "ticketType": "software",
+    "status": "Open",
+    "createdAt": "2025-05-04T21:15:39.534Z",
+    "contactEmails": []
+  }
+]
