@@ -227,7 +227,12 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Server error' });
 });
 
-// Start server
+/* // Start server
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+ */
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT} at host 0.0.0.0`);
 });
