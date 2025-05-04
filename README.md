@@ -4,6 +4,10 @@
 Student repository for exercises and testing for ITWEB300-2502B.    
 Patrick Frank, Instructor
 
+The front end of this project is hosted on Pages. You can pull it up by following the link below: 
+
+
+
 # Construction Notes
 This project was created in Visual Studio Code and uses Node, Express, HTML, CSS and JS. The code was with the assistance of Copilot using Claude Sonnet 3.7. This was used mainly for the CSS, code comments, and most of the logic in server.js, as well as some improvements to the JavaScript code in main.js. 
 
