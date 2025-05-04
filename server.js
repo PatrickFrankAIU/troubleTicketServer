@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Add near the top with other requires
 
 // Add this near the top
 const isProduction = process.env.NODE_ENV === 'production';
@@ -37,7 +36,6 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors()); // Add before other middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
