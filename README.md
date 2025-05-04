@@ -10,7 +10,7 @@ https://patrickfrankaiu.github.io/troubleTicketServer/
 
 
 # Construction Notes
-This project was created in Visual Studio Code and uses Node, Express, HTML, CSS and JS. The code was with the assistance of Copilot using Claude Sonnet 3.7. This was used mainly for the CSS, code comments, and most of the logic in server.js, as well as some improvements to the JavaScript code in main.js. 
+This project was created in Visual Studio Code and uses Node, Express, HTML, CSS and JS. The code was with the assistance of Copilot using Claude 3.7 Sonnet. This was used mainly for the CSS, code comments, and most of the logic in server.js, as well as some improvements to the JavaScript code in main.js. 
 
 # Context Info
 I'm experimenting with context files for AI agents with GitHub Copilot. The notes below are related to that. 
