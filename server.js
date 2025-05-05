@@ -1,12 +1,12 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const cors = require('cors'); // Added cors package
+const cors = require('cors');
 
-// Add this near the top
+// Environment configuration
 const isProduction = process.env.NODE_ENV === 'production';
 
-// In-memory ticket storage for production environments
+// In-memory ticket storage (used in both dev and production)
 let ticketsInMemory = [];
 
 // Data file path (only used in development)
@@ -28,26 +28,29 @@ if (!isProduction) {
         ticketsInMemory = JSON.parse(data);
     } catch (err) {
         console.error('Error loading tickets:', err);
+        // Initialize with empty array if there's an error
+        ticketsInMemory = [];
     }
 }
 
 // Create Express app
 const app = express();
-const PORT = process.env.PORT || 10000; // Changed default port to 10000 for Render
+const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors()); // Add CORS support
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Logging middleware
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.path}`);
   next();
 });
 
-// Fixed static file serving - create a 'public' folder for static assets
-// Be sure to create this directory in your project
+// Serve static files from the 'public' directory
+// Important: Create a 'public' folder and move your HTML, CSS, and JS files there
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // Classes
 class Ticket {
@@ -119,13 +122,15 @@ function extractEmails(text) {
     return text.match(emailRegex) || [];
 }
 
-// API Endpoints
+// API Routes
 // Get all tickets
 app.get('/api/tickets', (req, res) => {
+    // In production, always use in-memory storage
     if (isProduction) {
         return res.json(ticketsInMemory);
     }
 
+    // In development, use file storage
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading tickets file:', err);
@@ -150,6 +155,7 @@ app.get('/api/tickets/search', (req, res) => {
         return res.status(400).json({ error: 'Search query is required' });
     }
     
+    // In production, search in-memory tickets
     if (isProduction) {
         const results = ticketsInMemory.filter(ticket => 
             ticket.id.includes(query) || 
@@ -160,6 +166,7 @@ app.get('/api/tickets/search', (req, res) => {
         return res.json(results);
     }
 
+    // In development, search file-based tickets
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             return res.status(500).json({ error: 'Error reading tickets data' });
@@ -203,12 +210,13 @@ app.post('/api/tickets', (req, res) => {
     // Extract emails from problem description
     newTicket.contactEmails = extractEmails(ticketData.probDesc);
     
+    // In production, store ticket in memory only
     if (isProduction) {
         ticketsInMemory.push(newTicket);
         return res.status(201).json(newTicket);
     }
 
-    // Save ticket
+    // In development, save ticket to file
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             return res.status(500).json({ error: 'Error reading tickets data' });
@@ -226,13 +234,18 @@ app.post('/api/tickets', (req, res) => {
     });
 });
 
-// Error logging middleware
-app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({ error: 'Server error' });
+// Route to serve the main HTML file
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Start server - FIXED HOST BINDING FOR RENDER.COM
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Server error' });
+});
+
+// Start server
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on port ${PORT} at host 0.0.0.0`);
 });
