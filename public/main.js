@@ -1,6 +1,12 @@
-// Wait for the DOM to be fully loaded
+/**
+ * IT Support Ticket System - Client-side JavaScript
+ * Handles user interactions, form validations, and API communication
+ * for the IT Support Ticket System.
+ */
+
+// Wait for the DOM to be fully loaded before executing
 document.addEventListener('DOMContentLoaded', function() {
-    // Get elements
+    // Get DOM elements
     let loginForm = document.getElementById('login-form');
     let loginSection = document.getElementById('login-section');
     let mainSection = document.getElementById('main-section');
@@ -25,7 +31,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let sortByDate = document.getElementById('sort-by-date');
     let refreshTickets = document.getElementById('refresh-tickets');
 
-    // Handle login form submission
+    /**
+     * Handle login form submission
+     * This is a simple simulation - in a real app, this would make an API call
+     */
     loginForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
@@ -43,7 +52,10 @@ document.addEventListener('DOMContentLoaded', function() {
         userWelcome.textContent = 'Hello, ' + username;
     });
     
-    // Handle logout
+    /**
+     * Handle logout
+     * Resets the form and shows the login section
+     */
     logoutBtn.addEventListener('click', function() {
         loginSection.classList.remove('hidden');
         mainSection.classList.add('hidden');
@@ -52,7 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
         loginError.textContent = '';
     });
     
-    // Tab switching
+    /**
+     * Tab switching functionality
+     * Shows the selected tab content and hides others
+     */
     tabBtns.forEach(function(btn) {
         btn.addEventListener('click', function() {
             // Remove active class from all buttons
@@ -79,7 +94,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Dynamic fields based on ticket type
+    /**
+     * Dynamic fields based on ticket type
+     * Shows different form fields depending on the selected ticket type
+     */
     ticketType.addEventListener('change', function() {
         let type = this.value;
         dynamicFields.innerHTML = '';
@@ -126,7 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Validate ticket data
+    /**
+     * Validate ticket data according to business rules
+     * @param {Object} data - Ticket data to validate
+     * @returns {Array} Array of validation error messages, empty if valid
+     */
     function validateTicket(data) {
         let errors = [];
         
@@ -158,16 +180,24 @@ document.addEventListener('DOMContentLoaded', function() {
         return errors;
     }
     
-    // Extract emails from text
+    /**
+     * Extract email addresses from text
+     * @param {string} text - Text to extract emails from
+     * @returns {Array} Array of email addresses found in the text
+     */
     function extractEmails(text) {
         let emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
         return text.match(emailRegex) || [];
     }
     
-    // Handle ticket form submission
+    /**
+     * Handle ticket form submission
+     * Validates input and submits to the API
+     */
     ticketForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
+        // Gather form data
         let ticketData = {
             reqDate: document.getElementById('reqDate').value.trim(),
             empID: document.getElementById('empID').value.trim(),
@@ -203,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let emails = extractEmails(ticketData.probDesc);
         ticketData.contactEmails = emails;
         
-        // Submit ticket using fetch with async/await
+        // Submit ticket using fetch API
         try {
             formErrors.innerHTML = '<p>Submitting ticket...</p>';
             
@@ -252,13 +282,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Create new ticket button
+    /**
+     * Create a new ticket button handler
+     * Resets the form to create another ticket
+     */
     newTicketBtn.addEventListener('click', function() {
         ticketSuccess.classList.add('hidden');
         ticketForm.classList.remove('hidden');
     });
     
-    // Search for tickets
+    /**
+     * Search for tickets
+     * Fetches tickets matching the search query
+     */
     searchBtn.addEventListener('click', async function() {
         let query = searchInput.value.trim();
         
@@ -306,7 +342,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Track current sort method
     let currentSort = 'id';
     
-    // Function to fetch and display all tickets
+    /**
+     * Fetch all tickets from the API and display them
+     */
     async function fetchAllTickets() {
         allTicketsContainer.innerHTML = '<p>Loading tickets...</p>';
         
@@ -336,7 +374,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to sort tickets
+    /**
+     * Sort tickets by the specified method
+     * @param {Array} tickets - Array of ticket objects to sort
+     * @param {string} sortBy - Sort method: 'id', 'name', or 'date'
+     */
     function sortTickets(tickets, sortBy) {
         if (sortBy === 'id') {
             // Sort by ticket ID (alphanumeric)
@@ -363,7 +405,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Function to display tickets
+    /**
+     * Display tickets in the UI
+     * @param {Array} tickets - Array of ticket objects to display
+     */
     function displayAllTickets(tickets) {
         let ticketsHTML = '<div class="ticket-list">';
         
@@ -383,7 +428,9 @@ document.addEventListener('DOMContentLoaded', function() {
         allTicketsContainer.innerHTML = ticketsHTML;
     }
     
-    // Event listeners for sort buttons
+    /**
+     * Sort buttons event listeners
+     */
     sortById.addEventListener('click', function() {
         setActiveSort(this);
         currentSort = 'id';
@@ -402,7 +449,10 @@ document.addEventListener('DOMContentLoaded', function() {
         fetchAllTickets();
     });
     
-    // Function to set active sort button
+    /**
+     * Set active sort button
+     * @param {Element} button - The button element to set as active
+     */
     function setActiveSort(button) {
         document.querySelectorAll('.sort-btn').forEach(function(btn) {
             btn.classList.remove('active');
@@ -410,7 +460,9 @@ document.addEventListener('DOMContentLoaded', function() {
         button.classList.add('active');
     }
     
-    // Event listener for refresh button
+    /**
+     * Refresh tickets button event listener
+     */
     refreshTickets.addEventListener('click', function() {
         fetchAllTickets();
     });

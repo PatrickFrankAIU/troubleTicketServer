@@ -5,14 +5,17 @@
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>IT Support Ticket System</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
+    <!-- Link to external CSS file -->
     <link rel='stylesheet' type='text/css' media='screen' href='main.css'>
 </head>
 <body>
     <div class="container">
+        <!-- Login Section -->
         <div id="login-section" class="section">
             <h1>IT Support Ticket System</h1>
             <div class="card">
                 <h2>Login</h2>
+                <!-- Simple login form - no actual authentication in this demo -->
                 <form id="login-form">
                     <div class="form-group">
                         <label for="username">Username:</label>
@@ -30,22 +33,26 @@
             </div>
         </div>
 
+        <!-- Main Application Section (hidden until login) -->
         <div id="main-section" class="section hidden">
             <header>
                 <div id="user-welcome"></div>
                 <button id="logout-btn">Logout</button>
             </header>
 
+            <!-- Tab Navigation -->
             <div class="tabs">
                 <button class="tab-btn active" data-tab="new-ticket">Create Ticket</button>
                 <button class="tab-btn" data-tab="search-tickets">Search Tickets</button>
                 <button class="tab-btn" data-tab="all-tickets">View All Tickets</button>
             </div>
 
+            <!-- Create Ticket Tab -->
             <div id="new-ticket" class="tab-content">
                 <div class="card">
                     <h2>Create Support Ticket</h2>
                     <form id="ticket-form">
+                        <!-- Ticket Type Selection -->
                         <div class="form-group">
                             <label for="ticketType">Issue Type:</label>
                             <select id="ticketType" name="ticketType" required>
@@ -56,6 +63,7 @@
                             </select>
                         </div>
                         
+                        <!-- Basic Ticket Information -->
                         <div class="form-group">
                             <label for="reqDate">Request Date:</label>
                             <input type="text" id="reqDate" name="reqDate" placeholder="mm/dd/yyyy" required>
@@ -76,6 +84,7 @@
                             <input type="text" id="lName" name="lName" required>
                         </div>
 
+                        <!-- Dynamic fields will be added here based on ticket type -->
                         <div id="dynamic-fields"></div>
                         
                         <div class="form-group">
@@ -91,6 +100,7 @@
                     </form>
                 </div>
                 
+                <!-- Success message (shown after ticket creation) -->
                 <div id="ticket-success" class="card hidden">
                     <h2>Ticket Created Successfully</h2>
                     <div id="ticket-details"></div>
@@ -98,6 +108,7 @@
                 </div>
             </div>
 
+            <!-- Search Tickets Tab -->
             <div id="search-tickets" class="tab-content hidden">
                 <div class="card">
                     <h2>Search Tickets</h2>
@@ -109,6 +120,7 @@
                 </div>
             </div>
 
+            <!-- View All Tickets Tab -->
             <div id="all-tickets" class="tab-content hidden">
                 <div class="card">
                     <h2>All Support Tickets</h2>
@@ -124,6 +136,7 @@
         </div>
     </div>
 
+    <!-- Link to external JavaScript file -->
     <script src='main.js'></script>
 </body>
 </html>

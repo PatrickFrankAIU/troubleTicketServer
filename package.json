@@ -1,12 +1,22 @@
 {
   "name": "it-support-ticket-system",
   "version": "1.0.0",
-  "description": "IT Support Ticket System",
+  "description": "A simple IT support ticket management system",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "NODE_ENV=development nodemon server.js"
+    "dev": "NODE_ENV=development nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "keywords": [
+    "node",
+    "express",
+    "tickets",
+    "support",
+    "it"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2"

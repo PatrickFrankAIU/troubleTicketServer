@@ -1,3 +1,10 @@
+/**
+ * IT Support Ticket System - Server
+ * An Express.js backend that serves the application's static files and provides
+ * API endpoints for managing IT support tickets.
+ */
+
+// Import required modules
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -5,6 +12,7 @@ const cors = require('cors');
 
 // Environment configuration
 const isProduction = process.env.NODE_ENV === 'production';
+console.log(`Running in ${isProduction ? 'production' : 'development'} mode`);
 
 // In-memory ticket storage (used in both dev and production)
 let ticketsInMemory = [];
@@ -12,12 +20,14 @@ let ticketsInMemory = [];
 // Data file path (only used in development)
 const TICKETS_FILE = path.join(__dirname, 'data', 'tickets.json');
 
-// Only create directories/files in development
+// Initialize file storage in development mode
 if (!isProduction) {
+    // Create data directory if it doesn't exist
     if (!fs.existsSync(path.join(__dirname, 'data'))) {
         fs.mkdirSync(path.join(__dirname, 'data'));
     }
 
+    // Create tickets file if it doesn't exist
     if (!fs.existsSync(TICKETS_FILE)) {
         fs.writeFileSync(TICKETS_FILE, JSON.stringify([]));
     }
@@ -26,6 +36,7 @@ if (!isProduction) {
     try {
         const data = fs.readFileSync(TICKETS_FILE, 'utf8');
         ticketsInMemory = JSON.parse(data);
+        console.log(`Loaded ${ticketsInMemory.length} tickets from file`);
     } catch (err) {
         console.error('Error loading tickets:', err);
         // Initialize with empty array if there's an error
@@ -38,24 +49,31 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(cors()); // Enable CORS for all routes
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded request bodies
 
 // Logging middleware
 app.use((req, res, next) => {
-  console.log(`${req.method} ${req.path}`);
+  console.log(`${new Date().toISOString()} | ${req.method} ${req.path}`);
   next();
 });
 
-// Serve static files from the 'public' directory
-// Important: Create a 'public' folder and move your HTML, CSS, and JS files there
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Classes
+/**
+ * Ticket class for creating and validating ticket objects
+ */
 class Ticket {
+    /**
+     * Create a new ticket
+     * @param {string} reqDate - Request date in mm/dd/yyyy format
+     * @param {string} empID - Employee ID (letter followed by 5 numbers)
+     * @param {string} fName - First name (starts with capital letter)
+     * @param {string} lName - Last name (starts with capital letter)
+     * @param {string} probDesc - Problem description
+     * @param {string} ticketType - Ticket type (computer, software, network)
+     */
     constructor(reqDate, empID, fName, lName, probDesc, ticketType) {
-        this.id = 'TK' + Date.now().toString().slice(-6);
+        this.id = 'TK' + Date.now().toString().slice(-6); // Generate unique ID
         this.reqDate = reqDate;
         this.empID = empID;
         this.fName = fName;
@@ -66,7 +84,11 @@ class Ticket {
         this.createdAt = new Date().toISOString();
     }
 
-    // Validate ticket data
+    /**
+     * Validate ticket data according to business rules
+     * @param {Object} data - Ticket data to validate
+     * @returns {Array} Array of validation error messages, empty if valid
+     */
     static validate(data) {
         const errors = [];
         
@@ -104,33 +126,49 @@ class Ticket {
     }
 }
 
+/**
+ * User class for authentication (simplified for demo)
+ */
 class User {
     constructor(username, password) {
         this.username = username;
         this.password = password; // In a real app, this would be hashed
     }
     
-    // Simulated login (always succeeds if both fields are provided)
+    /**
+     * Simulated login (always succeeds if both fields are provided)
+     * @param {string} username - Username
+     * @param {string} password - Password
+     * @returns {boolean} Whether login was successful
+     */
     static login(username, password) {
         return !!(username && password);
     }
 }
 
-// Utility Functions
+/**
+ * Extract email addresses from text
+ * @param {string} text - Text to extract emails from
+ * @returns {Array} Array of email addresses found in the text
+ */
 function extractEmails(text) {
     const emailRegex = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g;
     return text.match(emailRegex) || [];
 }
 
-// API Routes
-// Get all tickets
+// API ROUTES
+
+/**
+ * Get all tickets
+ * GET /api/tickets
+ */
 app.get('/api/tickets', (req, res) => {
-    // In production, always use in-memory storage
+    // In production, return in-memory tickets
     if (isProduction) {
         return res.json(ticketsInMemory);
     }
 
-    // In development, use file storage
+    // In development, read from file
     fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading tickets file:', err);
@@ -147,7 +185,10 @@ app.get('/api/tickets', (req, res) => {
     });
 });
 
-// Search tickets
+/**
+ * Search for tickets by name or ID
+ * GET /api/tickets/search?query=searchterm
+ */
 app.get('/api/tickets/search', (req, res) => {
     const query = req.query.query || '';
     
@@ -184,7 +225,10 @@ app.get('/api/tickets/search', (req, res) => {
     });
 });
 
-// Create a new ticket
+/**
+ * Create a new ticket
+ * POST /api/tickets
+ */
 app.post('/api/tickets', (req, res) => {
     console.log('Received ticket data:', req.body);
     
@@ -197,60 +241,85 @@ app.post('/api/tickets', (req, res) => {
         return res.status(400).json({ errors: validationErrors });
     }
     
-    // Create new ticket
-    const newTicket = new Ticket(
-        ticketData.reqDate,
-        ticketData.empID,
-        ticketData.fName,
-        ticketData.lName,
-        ticketData.probDesc,
-        ticketData.ticketType
-    );
-    
-    // Extract emails from problem description
-    newTicket.contactEmails = extractEmails(ticketData.probDesc);
-    
-    // In production, store ticket in memory only
-    if (isProduction) {
-        ticketsInMemory.push(newTicket);
-        return res.status(201).json(newTicket);
-    }
-
-    // In development, save ticket to file
-    fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ error: 'Error reading tickets data' });
+    try {
+        // Create new ticket
+        const newTicket = new Ticket(
+            ticketData.reqDate,
+            ticketData.empID,
+            ticketData.fName,
+            ticketData.lName,
+            ticketData.probDesc,
+            ticketData.ticketType
+        );
+        
+        // Extract emails from problem description
+        newTicket.contactEmails = extractEmails(ticketData.probDesc);
+        
+        // In production, store ticket in memory only
+        if (isProduction) {
+            ticketsInMemory.push(newTicket);
+            console.log('Ticket created and stored in memory:', newTicket.id);
+            return res.status(201).json(newTicket);
         }
-        
-        const tickets = JSON.parse(data);
-        tickets.push(newTicket);
-        
-        fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2), err => {
+
+        // In development, save ticket to file
+        fs.readFile(TICKETS_FILE, 'utf8', (err, data) => {
             if (err) {
-                return res.status(500).json({ error: 'Error saving ticket' });
+                return res.status(500).json({ error: 'Error reading tickets data' });
             }
-            res.status(201).json(newTicket);
+            
+            try {
+                const tickets = JSON.parse(data);
+                tickets.push(newTicket);
+                
+                fs.writeFile(TICKETS_FILE, JSON.stringify(tickets, null, 2), err => {
+                    if (err) {
+                        return res.status(500).json({ error: 'Error saving ticket' });
+                    }
+                    res.status(201).json(newTicket);
+                });
+            } catch (parseError) {
+                console.error('Error parsing tickets data:', parseError);
+                return res.status(500).json({ error: 'Error parsing tickets data' });
+            }
         });
-    });
+    } catch (error) {
+        console.error('Server error creating ticket:', error);
+        return res.status(500).json({ error: 'Server error creating ticket' });
+    }
 });
 
-// Route to serve the main HTML file
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+/**
+ * Get a simple API test endpoint
+ * GET /api/ping
+ */
+app.get('/api/ping', (req, res) => {
+  res.json({ success: true, message: 'API is working!' });
 });
 
-// Add this new route handler
+// Serve static files from the 'public' directory
+// This must come AFTER all API routes
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Catch-all route for API endpoints that don't exist
+// This ensures API routes return JSON, not HTML
 app.use('/api/*', (req, res) => {
-    res.status(404).json({ error: 'API endpoint not found' });
-  });
-  
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// Route to serve the main HTML file for any other routes
+// This enables client-side routing for single-page applications
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('Server error:', err);
-    res.status(500).json({ error: 'Server error' });
+  console.error('Server error:', err);
+  res.status(500).json({ error: 'Server error' });
 });
 
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT} at host 0.0.0.0`);
+  console.log(`Server running on port ${PORT} at host 0.0.0.0`);
 });
