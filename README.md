@@ -66,6 +66,7 @@ The server is built with Express.js and provides:
    - JSON body parsing
    - Static file serving
    - Error handling
+   - Two custom classes: Ticket and User
 
 ### Frontend (public/*)
 
