@@ -5,7 +5,8 @@ Patrick Frank, Instructor
 
 The front end of this project is hosted at the link below: 
 https://troubleticketserver.onrender.com
-
+Login: This is just simulated. Use your first name and anything for the password. 
+_Note: The application may take a couple minutes to start if it hasn't been run in a while. _
 
 # IT Support Ticket System - Documentation
 
