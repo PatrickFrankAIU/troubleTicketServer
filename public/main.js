@@ -29,9 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let sortById = document.getElementById('sort-by-id');
     let sortByName = document.getElementById('sort-by-name');
     let sortByDate = document.getElementById('sort-by-date');
-    let refreshTickets = document.getElementById('refresh-tickets');
-
-    /**
+    let refreshTickets = document.getElementById('refresh-tickets');    /**
      * Handle login form submission
      * This is a simple simulation - in a real app, this would make an API call
      */
@@ -50,6 +48,29 @@ document.addEventListener('DOMContentLoaded', function() {
         loginSection.classList.add('hidden');
         mainSection.classList.remove('hidden');
         userWelcome.textContent = 'Hello, ' + username;
+        
+        // Change default tab to "View All Tickets"
+        // Remove active class from all buttons
+        tabBtns.forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        
+        // Hide all tab contents
+        tabContents.forEach(function(content) {
+            content.classList.add('hidden');
+        });
+          // Make "View All Tickets" tab active
+        document.querySelector('.tab-btn[data-tab="all-tickets"]').classList.add('active');
+        document.getElementById('all-tickets').classList.remove('hidden');
+        
+        // Set "Sort by Date" as the active sort
+        document.querySelectorAll('.sort-btn').forEach(function(btn) {
+            btn.classList.remove('active');
+        });
+        document.getElementById('sort-by-date').classList.add('active');
+        
+        // Load tickets for the All Tickets tab
+        fetchAllTickets();
     });
     
     /**
@@ -336,11 +357,10 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             searchResults.innerHTML = '<p>Network error. Please try again.</p>';
             console.error('Error:', error);
-        }
-    });
+        }    });
     
     // Track current sort method
-    let currentSort = 'id';
+    let currentSort = 'date';
     
     /**
      * Fetch all tickets from the API and display them
