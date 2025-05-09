@@ -10,12 +10,22 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 
+// Import sample tickets for production use
+const sampleTickets = require('./data/sampleTickets');
+
 // Environment configuration
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 console.log(`Running in ${isProduction ? 'production' : 'development'} mode`);
 
 // In-memory ticket storage (used in both dev and production)
 let ticketsInMemory = [];
+
+// Initialize with sample data in production
+if (isProduction) {
+    console.log('Loading sample tickets for production environment');
+    ticketsInMemory = [...sampleTickets];
+    console.log(`Loaded ${ticketsInMemory.length} sample tickets`);
+}
 
 // Data file path (only used in development)
 const TICKETS_FILE = path.join(__dirname, 'data', 'tickets.json');
@@ -62,8 +72,7 @@ app.use((req, res, next) => {
 /**
  * Ticket class for creating and validating ticket objects
  */
-class Ticket {
-    /**
+class Ticket {    /**
      * Create a new ticket
      * @param {string} reqDate - Request date in mm/dd/yyyy format
      * @param {string} empID - Employee ID (letter followed by 5 numbers)
@@ -71,9 +80,10 @@ class Ticket {
      * @param {string} lName - Last name (starts with capital letter)
      * @param {string} probDesc - Problem description
      * @param {string} ticketType - Ticket type (computer, software, network)
+     * @param {string} [id] - Optional id, if not provided, one will be generated
      */
-    constructor(reqDate, empID, fName, lName, probDesc, ticketType) {
-        this.id = 'TK' + Date.now().toString().slice(-6); // Generate unique ID
+    constructor(reqDate, empID, fName, lName, probDesc, ticketType, id) {
+        this.id = id || 'TK' + Date.now().toString().slice(-6); // Use provided ID or generate one
         this.reqDate = reqDate;
         this.empID = empID;
         this.fName = fName;
@@ -240,8 +250,7 @@ app.post('/api/tickets', (req, res) => {
         console.log('Validation errors:', validationErrors);
         return res.status(400).json({ errors: validationErrors });
     }
-    
-    try {
+      try {
         // Create new ticket
         const newTicket = new Ticket(
             ticketData.reqDate,
@@ -249,14 +258,33 @@ app.post('/api/tickets', (req, res) => {
             ticketData.fName,
             ticketData.lName,
             ticketData.probDesc,
-            ticketData.ticketType
+            ticketData.ticketType,
+            ticketData.id // Pass ID if provided
         );
-        
-        // Extract emails from problem description
+          // Extract emails from problem description
         newTicket.contactEmails = extractEmails(ticketData.probDesc);
         
-        // In production, store ticket in memory only
+        // Add dynamic fields based on ticket type
+        if (ticketData.ticketType === 'computer' && ticketData.computerModel && ticketData.serialNumber) {
+            newTicket.computerModel = ticketData.computerModel;
+            newTicket.serialNumber = ticketData.serialNumber;
+        } else if (ticketData.ticketType === 'software' && ticketData.softwareName && ticketData.softwareVersion) {
+            newTicket.softwareName = ticketData.softwareName;
+            newTicket.softwareVersion = ticketData.softwareVersion;
+        } else if (ticketData.ticketType === 'network' && ticketData.networkLocation && ticketData.macAddress) {
+            newTicket.networkLocation = ticketData.networkLocation;
+            newTicket.macAddress = ticketData.macAddress;
+        }
+          // In production, store ticket in memory only
         if (isProduction) {
+            // Add additional properties from dynamic fields that might be in the sample data
+            if (ticketData.computerModel) newTicket.computerModel = ticketData.computerModel;
+            if (ticketData.serialNumber) newTicket.serialNumber = ticketData.serialNumber;
+            if (ticketData.softwareName) newTicket.softwareName = ticketData.softwareName;
+            if (ticketData.softwareVersion) newTicket.softwareVersion = ticketData.softwareVersion;
+            if (ticketData.networkLocation) newTicket.networkLocation = ticketData.networkLocation;
+            if (ticketData.macAddress) newTicket.macAddress = ticketData.macAddress;
+            
             ticketsInMemory.push(newTicket);
             console.log('Ticket created and stored in memory:', newTicket.id);
             return res.status(201).json(newTicket);
